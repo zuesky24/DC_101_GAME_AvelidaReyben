@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Memory Match Game by Rey Ben Avelida</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --panel:#0b1220;
+      --accent:#22c55e;
+      --muted:#94a3b8;
+    }
+    body{
+      margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(180deg,var(--bg),#071029);
+      font-family:Inter,Arial;color:#e6eef8
+    }
+    .wrap{
+      width:100%;max-width:900px;padding:20px;
+      background:rgba(255,255,255,0.03);
+      border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.6);
+    }
+    h1{margin:0;font-size:22px;text-align:center}
+    .grid{
+      margin-top:20px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+    .card{
+      background:var(--panel);
+      border-radius:10px;
+      height:110px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:32px;
+      cursor:pointer;
+      user-select:none;
+      transition:0.2s;
+    }
+    .card.flipped{
+      background:var(--accent);
+      color:#042014;
+      font-weight:700;
+    }
+    .stats{
+      margin-top:10px;text-align:center;color:var(--muted);
+      font-size:14px;
+    }
+    button{
+      margin-top:15px;
+      width:100%;padding:10px;
+      background:var(--accent);
+      border:none;border-radius:8px;
+      font-weight:700;color:#042014;
+      font-size:15px;cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Memory Match Game</h1>
+    <div class="stats">Moves: <span id="moves">0</span></div>
+    <div class="grid" id="grid"></div>
+    <button id="restart">Restart</button>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const movesEl = document.getElementById("moves");
+    const restartBtn = document.getElementById("restart");
+
+    const symbols = ["🍎","🍌","🍇","🍑","🍓","🍒","🥝","🍉"]; // 8 pairs
+    let cards = [];
+    let firstCard = null;
+    let secondCard = null;
+    let lock = false;
+    let moves = 0;
+
+    function shuffle(array){
+      for(let i = array.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function setup(){
+      grid.innerHTML = "";
+      moves = 0;
+      movesEl.textContent = moves;
+
+      const doubled = [...symbols, ...symbols];
+      shuffle(doubled);
+
+      doubled.forEach((sym, index)=>{
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.symbol = sym;
+        card.dataset.index = index;
+        card.addEventListener("click",()=>flip(card));
+        grid.appendChild(card);
+      });
+    }
+
+    function flip(card){
+      if(lock) return;
+      if(card === firstCard) return;
+
+      card.classList.add("flipped");
+      card.textContent = card.dataset.symbol;
+
+      if(!firstCard){
+        firstCard = card;
+        return;
+      }
+
+      secondCard = card;
+      moves++;
+      movesEl.textContent = moves;
+      lock = true;
+
+      if(firstCard.dataset.symbol === secondCard.dataset.symbol){
+        firstCard = null;
+        secondCard = null;
+        lock = false;
+      } else {
+        setTimeout(()=>{
+          firstCard.classList.remove("flipped");
+          secondCard.classList.remove("flipped");
+          firstCard.textContent = "";
+          secondCard.textContent = "";
+          firstCard = null;
+          secondCard = null;
+          lock = false;
+        }, 800);
+      }
+    }
+
+    restartBtn.onclick = setup;
+    setup();
+  </script>
+</body>
+</html>
